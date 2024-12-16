@@ -13,6 +13,46 @@ botStrat1 = __import__(botName1)
 botStrat2 = __import__(botName2)
 ####################################
 
+
+# wrapping the functions to add timeouts (copied from stackoverflow)
+import signal
+import functools
+
+
+def timeout(seconds=5):
+
+    def decorator(func):
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+
+            def handle_timeout(signum, frame):
+                raise TimeoutError()
+
+            signal.signal(signal.SIGALRM, handle_timeout)
+            signal.alarm(seconds)
+
+            result = func(*args, **kwargs)
+
+            signal.alarm(0)
+
+            return result
+
+        return wrapper
+
+    return decorator
+
+
+@timeout(seconds=5)
+def strat1Move(cardDeck, gamePile, gameAmount, oppCardDeckLen):
+    return botStrat1.getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen)
+
+
+@timeout(seconds=5)
+def strat2Move(cardDeck, gamePile, gameAmount, oppCardDeckLen):
+    return botStrat2.getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen)
+
+
 print(f"Bot 1 has {getTokenCount(botName1)}/5000 tokens")
 print(f"Bot 2 has {getTokenCount(botName2)}/5000 tokens")
 
@@ -86,15 +126,21 @@ def placeMove(currentPlayer):
     global gamePile, gameAmount, currentTurn, cardDeck1, cardDeck2
 
     print(f"Player {currentPlayer}'s turn")
-    if currentPlayer == 1:
-        playerAmount, playerCard = botStrat1.getMove(
-            cardDeck1, gamePile, gameAmount, len(cardDeck1)
-        )
 
-    else:
-        playerAmount, playerCard = botStrat2.getMove(
-            cardDeck2, gamePile, gameAmount, len(cardDeck1)
-        )
+    try:
+        if currentPlayer == 1:
+            playerAmount, playerCard = strat1Move(
+                cardDeck1, gamePile, gameAmount, len(cardDeck1)
+            )
+
+        else:
+            playerAmount, playerCard = strat2Move(
+                cardDeck2, gamePile, gameAmount, len(cardDeck1)
+            )
+
+    except TimeoutError:
+        print(f"Player {currentPlayer} took too long and lost")
+        sys.exit()
 
     playerAmount = int(playerAmount)
 
