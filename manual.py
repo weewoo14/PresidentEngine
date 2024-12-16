@@ -18,7 +18,7 @@ cardValues = {
 
 def getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen):
     print(
-        "You currently have: ", " ".join(sorted(cardDeck, key=lambda x: cardValues[x]))
+        "You currently have:", " ".join(sorted(cardDeck, key=lambda x: cardValues[x]))
     )
     if len(gamePile):
         print(f"The top of the pile is {gameAmount}x{gamePile[-1]}")

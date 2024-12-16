@@ -13,6 +13,9 @@ botStrat1 = __import__(botName1)
 botStrat2 = __import__(botName2)
 ####################################
 
+# Options
+games = 1  # How many games to simulate
+verbose = True  # Print every move, or just print the result of each game (cheating will always be printed)
 
 # wrapping the functions to add timeouts (copied from stackoverflow)
 import signal
@@ -55,6 +58,12 @@ def strat2Move(cardDeck, gamePile, gameAmount, oppCardDeckLen):
 
 print(f"Bot 1 has {getTokenCount(botName1)}/5000 tokens")
 print(f"Bot 2 has {getTokenCount(botName2)}/5000 tokens")
+
+
+def unimportantPrint(thing):
+    if verbose:
+        print(thing)
+
 
 # Establishing the card values
 cardValues = {
@@ -125,7 +134,7 @@ gamePile, gameAmount = [], -1
 def placeMove(currentPlayer):
     global gamePile, gameAmount, currentTurn, cardDeck1, cardDeck2
 
-    print(f"Player {currentPlayer}'s turn")
+    unimportantPrint(f"Player {currentPlayer}'s turn")
 
     try:
         if currentPlayer == 1:
@@ -145,15 +154,14 @@ def placeMove(currentPlayer):
     playerAmount = int(playerAmount)
 
     if playerAmount == 0:
-        print(f"Player {currentPlayer} skipped their turn")
+        unimportantPrint(f"Player {currentPlayer} skipped their turn")
         return
 
     if gameAmount == -1:
         gameAmount = playerAmount
 
-    print(playerAmount, gameAmount)
     if playerCard == "JOKER":
-        print(f"Player {currentPlayer} has burned the pile with a joker!")
+        unimportantPrint(f"Player {currentPlayer} has burned the pile with a joker!")
         gamePile = []
         gameAmount = -1
 
@@ -169,10 +177,10 @@ def placeMove(currentPlayer):
         cardValue2 = cardValues[playerCard]
 
         if cardValue2 > cardValue1:
-            print(
+            unimportantPrint(
                 f"Player {currentPlayer} has placed {gameAmount} {playerCard} into the pile."
             )
-            print(f"The pile now looks like this: {' '.join(gamePile)}")
+            unimportantPrint(f"The pile now looks like this: {' '.join(gamePile)}")
 
             gamePile.append(playerCard)
             currentTurn += 1
@@ -201,7 +209,7 @@ def placeMove(currentPlayer):
                         sys.exit()
 
         elif cardValue2 == cardValue1:
-            print(f"Player {currentPlayer} has burned the pile!")
+            unimportantPrint(f"Player {currentPlayer} has burned the pile!")
             gamePile = []
             gameAmount = -1
 
@@ -215,7 +223,7 @@ def placeMove(currentPlayer):
 
         else:
             print(
-                f"Player {currentPlayer} has cheated because card value less than pile card vluasdafs!"
+                f"Player {currentPlayer} has cheated because card value less than pile card!"
             )
             sys.exit()
 
@@ -225,7 +233,7 @@ def placeMove(currentPlayer):
 
 
 coinflip = floor(random() * 2)
-print("player", coinflip + 1, "begins")
+unimportantPrint("player", coinflip + 1, "begins")
 while len(cardDeck1) > 0 and len(cardDeck2) > 0:
     if currentTurn % 2 == coinflip:
         placeMove(1)
