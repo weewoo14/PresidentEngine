@@ -1,6 +1,7 @@
 from time import *
 from random import *
 from math import *
+from tokenizer import getTokenCount
 import sys
 
 
@@ -12,6 +13,8 @@ botStrat1 = __import__(botName1)
 botStrat2 = __import__(botName2)
 ####################################
 
+print(f"Bot 1 has {getTokenCount(botName1)}/5000 tokens")
+print(f"Bot 2 has {getTokenCount(botName2)}/5000 tokens")
 
 # Establishing the card values
 cardValues = {
@@ -82,6 +85,7 @@ gamePile, gameAmount = [], -1
 def placeMove(currentPlayer):
     global gamePile, gameAmount, currentTurn, cardDeck1, cardDeck2
 
+    print(f"Player {currentPlayer}'s turn")
     if currentPlayer == 1:
         playerAmount, playerCard = botStrat1.getMove(
             cardDeck1, gamePile, gameAmount, len(cardDeck1)
@@ -94,70 +98,64 @@ def placeMove(currentPlayer):
 
     playerAmount = int(playerAmount)
 
+    if playerAmount == 0:
+        print(f"Player {currentPlayer} skipped their turn")
+        return
+
     if gameAmount == -1:
         gameAmount = playerAmount
-        gamePile.append(playerCard)
-        currentTurn += 1
 
-    else:
-        print(playerAmount, gameAmount)
-        if playerAmount == gameAmount:
-            cardValue1 = cardValues[gamePile[-1]]
-            cardValue2 = cardValues[playerCard]
+    print(playerAmount, gameAmount)
+    if playerCard == "JOKER":
+        print(f"Player {currentPlayer} has burned the pile with a joker!")
+        gamePile = []
+        gameAmount = -1
 
-            if cardValue2 > cardValue1:
-                print(
-                    f"Player {currentPlayer} has placed {gameAmount} {playerCard} into the pile."
-                )
-                print(f"The pile now looks like this: {' '.join(gamePile)}")
+        if currentPlayer == 1:
+            for card in range(playerAmount):
+                cardDeck1.remove(playerCard)
 
-                gamePile.append(playerCard)
-                currentTurn += 1
+        else:
+            for card in range(playerAmount):
+                cardDeck2.remove(playerCard)
+    elif playerAmount == gameAmount:
+        cardValue1 = cardValues[gamePile[-1]] if len(gamePile) else 0
+        cardValue2 = cardValues[playerCard]
 
-                if currentPlayer == 1:
-                    for card in range(playerAmount):
+        if cardValue2 > cardValue1:
+            print(
+                f"Player {currentPlayer} has placed {gameAmount} {playerCard} into the pile."
+            )
+            print(f"The pile now looks like this: {' '.join(gamePile)}")
 
-                        try:
-                            cardDeck1.remove(playerCard)
+            gamePile.append(playerCard)
+            currentTurn += 1
 
-                        except:
-                            print(
-                                "Player 1 has cheated! They don't have enough of that card!"
-                            )
-                            sys.exit()
+            if currentPlayer == 1:
+                for card in range(playerAmount):
 
-                else:
-                    for card in range(playerAmount):
-
-                        try:
-                            cardDeck2.remove(playerCard)
-                        except:
-                            print(
-                                "Player 2 has cheated! They don't have enough of that card!"
-                            )
-                            sys.exit()
-
-            elif cardValue2 == cardValue1:
-                print(f"Player {currentPlayer} has burned the pile!")
-                gamePile = []
-                gameAmount = -1
-
-                if currentPlayer == 1:
-                    for card in range(playerAmount):
+                    try:
                         cardDeck1.remove(playerCard)
 
-                else:
-                    for card in range(playerAmount):
-                        cardDeck2.remove(playerCard)
+                    except:
+                        print(
+                            "Player 1 has cheated! They don't have enough of that card!"
+                        )
+                        sys.exit()
 
             else:
-                print(
-                    f"Player {currentPlayer} has cheated because card value less than pile card vluasdafs!"
-                )
-                sys.exit()
+                for card in range(playerAmount):
 
-        elif playerAmount != gameAmount and playerCard == "JOKER":
-            print(f"Player {currentPlayer} has burned the pile with a joker!")
+                    try:
+                        cardDeck2.remove(playerCard)
+                    except:
+                        print(
+                            "Player 2 has cheated! They don't have enough of that card!"
+                        )
+                        sys.exit()
+
+        elif cardValue2 == cardValue1:
+            print(f"Player {currentPlayer} has burned the pile!")
             gamePile = []
             gameAmount = -1
 
@@ -170,12 +168,20 @@ def placeMove(currentPlayer):
                     cardDeck2.remove(playerCard)
 
         else:
-            print(f"Player {currentPlayer} has cheated! not enough cards")
+            print(
+                f"Player {currentPlayer} has cheated because card value less than pile card vluasdafs!"
+            )
             sys.exit()
 
+    else:
+        print(f"Player {currentPlayer} has cheated! not enough cards")
+        sys.exit()
 
+
+coinflip = floor(random() * 2)
+print("player", coinflip + 1, "begins")
 while len(cardDeck1) > 0 and len(cardDeck2) > 0:
-    if currentTurn % 2 == 0:
+    if currentTurn % 2 == coinflip:
         placeMove(1)
 
     else:
