@@ -19,13 +19,14 @@ botStrat2 = __import__(botName2)
 games = 1  # How many games to simulate
 verbose = True  # Print every move, or just print the result of each game (cheating will always be printed)
 delay = 1  # delay between turns (s)
+timeoutDuration = 60  # timeout (will be 5 for the competition)
 
 # wrapping the functions to add timeouts (copied from stackoverflow)
 import signal
 import functools
 
 
-def timeout(seconds=5):
+def timeout(seconds=timeoutDuration):
 
     def decorator(func):
 
@@ -49,12 +50,12 @@ def timeout(seconds=5):
     return decorator
 
 
-@timeout(seconds=60)
+@timeout()
 def strat1Move(cardDeck, gamePile, gameAmount, oppCardDeckLen):
     return botStrat1.getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen)
 
 
-@timeout(seconds=60)
+@timeout()
 def strat2Move(cardDeck, gamePile, gameAmount, oppCardDeckLen):
     return botStrat2.getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen)
 
