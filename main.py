@@ -8,16 +8,17 @@ import os
 columns, lines = os.get_terminal_size()
 
 ### IMPORTING THE BOT STRATEGIES ###
-botName1 = "manual"
-botName2 = "manual"
+botName1 = "basic"
+botName2 = "basic"
 
 botStrat1 = __import__(botName1)
 botStrat2 = __import__(botName2)
 ####################################
 
 # Options
-games = 20  # How many games to simulate
-verbose = False  # Print every move, or just print the result of each game (cheating will always be printed)
+games = 1  # How many games to simulate
+verbose = True  # Print every move, or just print the result of each game (cheating will always be printed)
+delay = 1  # delay between turns (s)
 
 # wrapping the functions to add timeouts (copied from stackoverflow)
 import signal
@@ -85,52 +86,55 @@ cardValues = {
     "JOKER": 16,
 }
 
-# Creating the total card deck by extracting the values from the
-totalCardDeck = []
-for card in cardValues:
-    if card == "JOKER":  # Only two jokers in a deck
-        numTimes = 2
+
+def shuffleDeck():
+    global cardDeck1, cardDeck2, currentTurn, gamePile, gameAmount
+    # Creating the total card deck by extracting the values from the
+    totalCardDeck = []
+    for card in cardValues:
+        if card == "JOKER":  # Only two jokers in a deck
+            numTimes = 2
+        else:
+            numTimes = 4
+
+        for numType in range(numTimes):
+            totalCardDeck.append(card)
+
+    # Distributing the cards to the bots
+    cardDeck1 = []
+    cardDeck2 = []
+
+    # Keeping track of the 3's to see which bot goes first. In the event no bot goes first, coinflip
+    playerOne3 = 0
+    playerTwo3 = 0
+    curDeck = 1
+    while len(totalCardDeck) > 18:
+
+        cardChoice = choice(totalCardDeck)
+        totalCardDeck.remove(cardChoice)
+
+        if curDeck % 2 == 1:
+            if cardChoice == "3":
+                playerOne3 += 1
+            cardDeck1.append(cardChoice)
+        else:
+            if cardChoice == "3":
+                playerTwo3 += 1
+            cardDeck2.append(cardChoice)
+
+        curDeck += 1
+
+    if playerOne3 == playerTwo3:
+        currentTurn = randint(0, 1)
+
     else:
-        numTimes = 4
+        if playerOne3 > playerTwo3:
+            currentTurn = 0
 
-    for numType in range(numTimes):
-        totalCardDeck.append(card)
+        else:
+            currentTurn = 1
 
-# Distributing the cards to the bots
-cardDeck1 = []
-cardDeck2 = []
-
-# Keeping track of the 3's to see which bot goes first. In the event no bot goes first, coinflip
-playerOne3 = 0
-playerTwo3 = 0
-curDeck = 1
-while len(totalCardDeck) > 18:
-
-    cardChoice = choice(totalCardDeck)
-    totalCardDeck.remove(cardChoice)
-
-    if curDeck % 2 == 1:
-        if cardChoice == "3":
-            playerOne3 += 1
-        cardDeck1.append(cardChoice)
-    else:
-        if cardChoice == "3":
-            playerTwo3 += 1
-        cardDeck2.append(cardChoice)
-
-    curDeck += 1
-
-if playerOne3 == playerTwo3:
-    currentTurn = randint(0, 1)
-
-else:
-    if playerOne3 > playerTwo3:
-        currentTurn = 0
-
-    else:
-        currentTurn = 1
-
-gamePile, gameAmount = [], -1
+    gamePile, gameAmount = [], -1
 
 
 def placeMove(currentPlayer):
@@ -155,10 +159,15 @@ def placeMove(currentPlayer):
 
     playerAmount = int(playerAmount)
 
+    # player skips their turn
     if playerAmount == 0:
         unimportantPrint(f"Player {currentPlayer} skipped their turn")
+        currentTurn += 1
+        gamePile = []
+        gameAmount = -1
         return 0
 
+    # was empty pile
     if gameAmount == -1:
         gameAmount = playerAmount
 
@@ -229,17 +238,17 @@ def placeMove(currentPlayer):
             return 1
 
     else:
-        print(f"Player {currentPlayer} has cheated! not enough cards")
+        print(
+            f"Player {currentPlayer} has cheated! Different number of cards than the pile!"
+        )
         return 1
 
     return 0
 
 
 def runRound():
-    coinflip = floor(random() * 2)
-    unimportantPrint("player", coinflip + 1, "begins")
     while len(cardDeck1) > 0 and len(cardDeck2) > 0:
-        if currentTurn % 2 == coinflip:
+        if currentTurn % 2 == 0:
             try:
                 if placeMove(1):
                     return 2
@@ -256,6 +265,7 @@ def runRound():
                 raise
             except:
                 return 1
+        sleep(delay)
 
     if len(cardDeck1) == 0:
         return 1
@@ -268,6 +278,7 @@ strat1Wins = 0
 strat2Wins = 0
 
 for i in range(games):
+    shuffleDeck()
     res = runRound()
 
     if res == 1:
