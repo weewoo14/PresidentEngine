@@ -49,12 +49,12 @@ def timeout(seconds=5):
     return decorator
 
 
-@timeout(seconds=5)
+@timeout(seconds=60)
 def strat1Move(cardDeck, gamePile, gameAmount, oppCardDeckLen):
     return botStrat1.getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen)
 
 
-@timeout(seconds=5)
+@timeout(seconds=60)
 def strat2Move(cardDeck, gamePile, gameAmount, oppCardDeckLen):
     return botStrat2.getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen)
 
