@@ -2,8 +2,10 @@ from time import *
 from random import *
 from math import *
 from tokenizer import getTokenCount
-import sys
+import os
 
+# get size of terminal
+columns, lines = os.get_terminal_size()
 
 ### IMPORTING THE BOT STRATEGIES ###
 botName1 = "manual"
@@ -14,8 +16,8 @@ botStrat2 = __import__(botName2)
 ####################################
 
 # Options
-games = 1  # How many games to simulate
-verbose = True  # Print every move, or just print the result of each game (cheating will always be printed)
+games = 20  # How many games to simulate
+verbose = False  # Print every move, or just print the result of each game (cheating will always be printed)
 
 # wrapping the functions to add timeouts (copied from stackoverflow)
 import signal
@@ -60,9 +62,9 @@ print(f"Bot 1 has {getTokenCount(botName1)}/5000 tokens")
 print(f"Bot 2 has {getTokenCount(botName2)}/5000 tokens")
 
 
-def unimportantPrint(thing):
+def unimportantPrint(*args, **kwargs):
     if verbose:
-        print(thing)
+        print(*args, **kwargs)
 
 
 # Establishing the card values
@@ -149,13 +151,13 @@ def placeMove(currentPlayer):
 
     except TimeoutError:
         print(f"Player {currentPlayer} took too long and lost")
-        sys.exit()
+        return 1
 
     playerAmount = int(playerAmount)
 
     if playerAmount == 0:
         unimportantPrint(f"Player {currentPlayer} skipped their turn")
-        return
+        return 0
 
     if gameAmount == -1:
         gameAmount = playerAmount
@@ -190,12 +192,11 @@ def placeMove(currentPlayer):
 
                     try:
                         cardDeck1.remove(playerCard)
-
                     except:
                         print(
                             "Player 1 has cheated! They don't have enough of that card!"
                         )
-                        sys.exit()
+                        return 1
 
             else:
                 for card in range(playerAmount):
@@ -206,7 +207,7 @@ def placeMove(currentPlayer):
                         print(
                             "Player 2 has cheated! They don't have enough of that card!"
                         )
-                        sys.exit()
+                        return 1
 
         elif cardValue2 == cardValue1:
             unimportantPrint(f"Player {currentPlayer} has burned the pile!")
@@ -225,24 +226,63 @@ def placeMove(currentPlayer):
             print(
                 f"Player {currentPlayer} has cheated because card value less than pile card!"
             )
-            sys.exit()
+            return 1
 
     else:
         print(f"Player {currentPlayer} has cheated! not enough cards")
-        sys.exit()
+        return 1
+
+    return 0
 
 
-coinflip = floor(random() * 2)
-unimportantPrint("player", coinflip + 1, "begins")
-while len(cardDeck1) > 0 and len(cardDeck2) > 0:
-    if currentTurn % 2 == coinflip:
-        placeMove(1)
+def runRound():
+    coinflip = floor(random() * 2)
+    unimportantPrint("player", coinflip + 1, "begins")
+    while len(cardDeck1) > 0 and len(cardDeck2) > 0:
+        if currentTurn % 2 == coinflip:
+            try:
+                if placeMove(1):
+                    return 2
+            except KeyboardInterrupt:
+                raise
+            except:
+                return 2
+
+        else:
+            try:
+                if placeMove(2):
+                    return 1
+            except KeyboardInterrupt:
+                raise
+            except:
+                return 1
+
+    if len(cardDeck1) == 0:
+        return 1
 
     else:
-        placeMove(2)
+        return 2
 
-if len(cardDeck1) == 0:
-    print("Player 1 wins!")
 
-else:
-    print("Player 2 wins!")
+strat1Wins = 0
+strat2Wins = 0
+
+for i in range(games):
+    res = runRound()
+
+    if res == 1:
+        strat1Wins += 1
+    else:
+        strat2Wins += 1
+
+    if games > 10 and not verbose:
+        strat1Avg = strat1Wins * 100 / (i + 1)
+        strat2Avg = strat2Wins * 100 / (i + 1)
+        print(
+            f"\x1b[0J\n{i + 1}/{games} games played ({round(100 * (i + 1)/games, 2)}%)   \n{'█' * round((i+1)/games * columns)}{'▒' * round((1 - (i+1)/games) * columns)}\n{botName1} wins: {strat1Wins} ({round(strat1Avg, 2)}%)   \n{botName2} wins: {strat2Wins} ({round(strat2Avg, 2)}%)   ",
+            end="\x1B[4A\r",
+        )
+    elif res == 1:
+        print("Player 1 wins!")
+    else:
+        print("Player 2 wins!")
