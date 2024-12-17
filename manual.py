@@ -24,4 +24,4 @@ def getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen):
         print(f"The top of the pile is {gameAmount}x{gamePile[-1]}")
     else:
         print("Pile is blank")
-    return input("How many? "), input("What will you play? ")
+    return input("How many? "), input("What will you play? ").upper()

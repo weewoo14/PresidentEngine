@@ -9,7 +9,7 @@ columns, lines = os.get_terminal_size()
 
 ### IMPORTING THE BOT STRATEGIES ###
 botName1 = "basic"
-botName2 = "basic"
+botName2 = "manual"
 
 botStrat1 = __import__(botName1)
 botStrat2 = __import__(botName2)
@@ -191,10 +191,10 @@ def placeMove(currentPlayer):
             unimportantPrint(
                 f"Player {currentPlayer} has placed {gameAmount} {playerCard} into the pile."
             )
-            unimportantPrint(f"The pile now looks like this: {' '.join(gamePile)}")
 
             gamePile.append(playerCard)
             currentTurn += 1
+            unimportantPrint(f"The pile now looks like this: {' '.join(gamePile)}")
 
             if currentPlayer == 1:
                 for card in range(playerAmount):
