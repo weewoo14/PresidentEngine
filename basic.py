@@ -37,7 +37,9 @@ def getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen):
         else:
             currentAmount = 1
             lookingAt = card
-        if currentAmount == gameAmount and cardValues[card] >= cardValues[gamePile[-1]]:
+        if (currentAmount == gameAmount or card == "JOKER") and cardValues[
+            card
+        ] >= cardValues[gamePile[-1]]:
             toPlay = card
             break
-    return gameAmount if toPlay != None else 0, toPlay
+    return currentAmount if toPlay != None else 0, toPlay
