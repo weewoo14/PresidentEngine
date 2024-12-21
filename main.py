@@ -60,8 +60,8 @@ def strat2Move(cardDeck, gamePile, gameAmount, oppCardDeckLen):
     return botStrat2.getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen)
 
 
-print(f"{botName1} has {getTokenCount(botName1)}/5000 tokens")
-print(f"{botName2} has {getTokenCount(botName2)}/5000 tokens")
+print(f"{botName1} has {getTokenCount(botName1)}/2048 tokens")
+print(f"{botName2} has {getTokenCount(botName2)}/2048 tokens")
 
 
 def unimportantPrint(*args, **kwargs):
