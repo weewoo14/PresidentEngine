@@ -255,7 +255,8 @@ def runRound():
                     return 2
             except KeyboardInterrupt:
                 raise
-            except:
+            except Exception as e:
+                print("Player 1 produced an error:", e)
                 return 2
 
         else:
@@ -264,7 +265,8 @@ def runRound():
                     return 1
             except KeyboardInterrupt:
                 raise
-            except:
+            except Exception as e:
+                print("Player 2 produced an error:", e)
                 return 1
         sleep(delay)
 
