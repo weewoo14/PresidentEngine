@@ -2,6 +2,7 @@ from time import *
 from random import *
 from math import *
 from tokenizer import getTokenCount
+import multiprocessing.pool
 import os
 
 # get size of terminal
@@ -20,45 +21,6 @@ games = 1  # How many games to simulate
 verbose = True  # Print every move, or just print the result of each game (cheating will always be printed)
 delay = 1  # delay between turns (s)
 timeoutDuration = 60  # timeout (will be 5 for the competition)
-
-# wrapping the functions to add timeouts (copied from stackoverflow)
-import signal
-import functools
-
-
-def timeout(seconds=timeoutDuration):
-
-    def decorator(func):
-
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-
-            def handle_timeout(signum, frame):
-                raise TimeoutError()
-
-            signal.signal(signal.SIGALRM, handle_timeout)
-            signal.alarm(seconds)
-
-            result = func(*args, **kwargs)
-
-            signal.alarm(0)
-
-            return result
-
-        return wrapper
-
-    return decorator
-
-
-@timeout()
-def strat1Move(cardDeck, gamePile, gameAmount, oppCardDeckLen):
-    return botStrat1.getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen)
-
-
-@timeout()
-def strat2Move(cardDeck, gamePile, gameAmount, oppCardDeckLen):
-    return botStrat2.getMove(cardDeck, gamePile, gameAmount, oppCardDeckLen)
-
 
 print(f"{botName1} has {getTokenCount(botName1)}/2048 tokens")
 print(f"{botName2} has {getTokenCount(botName2)}/2048 tokens")
@@ -144,17 +106,19 @@ def placeMove(currentPlayer):
     unimportantPrint(f"Player {currentPlayer}'s turn")
 
     try:
-        if currentPlayer == 1:
-            playerAmount, playerCard = strat1Move(
-                cardDeck1, gamePile, gameAmount, len(cardDeck1)
-            )
+        with multiprocessing.pool.ThreadPool() as pool:
+            if currentPlayer == 1:
+                future = pool.apply_async(
+                    botStrat1.getMove, (cardDeck1, gamePile, gameAmount, len(cardDeck1))
+                )
 
-        else:
-            playerAmount, playerCard = strat2Move(
-                cardDeck2, gamePile, gameAmount, len(cardDeck1)
-            )
+            else:
+                future = pool.apply_async(
+                    botStrat2.getMove, (cardDeck2, gamePile, gameAmount, len(cardDeck1))
+                )
+            playerAmount, playerCard = future.get(timeout=timeoutDuration)
 
-    except TimeoutError:
+    except multiprocessing.TimeoutError:
         print(f"Player {currentPlayer} took too long and lost")
         return 1
 
