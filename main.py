@@ -109,7 +109,7 @@ def placeMove(currentPlayer):
         with multiprocessing.pool.ThreadPool() as pool:
             if currentPlayer == 1:
                 future = pool.apply_async(
-                    botStrat1.getMove, (cardDeck1, gamePile, gameAmount, len(cardDeck1))
+                    botStrat1.getMove, (cardDeck1, gamePile, gameAmount, len(cardDeck2))
                 )
 
             else:
