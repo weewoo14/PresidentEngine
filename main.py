@@ -9,8 +9,8 @@ import os
 columns, lines = os.get_terminal_size()
 
 ### IMPORTING THE BOT STRATEGIES ###
-botName1 = "basic"
-botName2 = "manual"
+botName1 = "manual"
+botName2 = "basic"
 
 botStrat1 = __import__(botName1)
 botStrat2 = __import__(botName2)
@@ -264,3 +264,6 @@ for i in range(games):
         print("Player 1 wins!")
     else:
         print("Player 2 wins!")
+
+if games > 10 and not verbose:
+    print("\x1B[4B")
